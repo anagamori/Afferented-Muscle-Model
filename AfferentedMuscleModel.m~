@@ -268,7 +268,7 @@ for i = 1:length(t)
     
     % add delay along efferent pathway
     if i > delay_efferent*Fs/1000
-        ND_long(i) = ND(i-delay_efferent*Fs/1000);
+        ND_long(i) = ND(i-delay_efferent*10);
     else
         ND_long(i) = 0;
     end
@@ -663,23 +663,30 @@ output.Af_fast = OutputAf_fast; % activation-frequency relationship for fast-twi
         
         % (Song et al. 2008)
         Ur = 0.8; % activation level at which all the motor units are recruited (Song et al. 2008)
-        U1_th = 0.001; % threshold for slow-twitch fiber       
-        U2_th = Ur*0.6; % threshold for fast-twitch fiber        
-        
-        if Ueff < U1_th
-            W1 = 0; % proportion of active slow-twitch fiber of total active muscle (0-1)
-        elseif Ueff < U2_th
-            W1 = (Ueff - U1_th)/(Ueff - U1_th);
-        else
-            W1 = (Ueff - U1_th)/((Ueff - U1_th) + (Ueff - U2_th));
+        U1_th = 0.001; % threshold for slow-twitch fiber
+        dif_U_1 = Ueff - U1_th; % difference between effective neural drive and threshold for slow-twitch fiber
+        U2_th = Ur*0.6; % threshold for fast-twitch fiber
+        dif_U_2 = Ueff - U2_th; % difference between effective neural drive and threshold for fast-twitch fiber
+        if dif_U_2 < 0
+            dif_U_2 = 0;
         end
-        if Ueff < U2_th 
+        
+        if U_eff < U1_th
+            W1 = 0; % proportion of active slow-twitch fiber of total active muscle (0-1)
+        elseif U_eff < U2_th
+            W1 = (U_eff - U1_th)/(U_eff - U1_th);
+        else
+            W1 = (U_eff - U1_th)/((U_eff - U1_th) + (U_eff - U2_th));
+        end
+        if U_eff < U2_th 
             W2 = 0; % proportion of active fast-twitch fiber of total active muscle (0-1)
         else
-            W2 = (Ueff - U2_th)/((Ueff - U1_th) + (Ueff - U2_th));
+            W2 = (U_eff - U2_th)/((U_eff - U1_th) + (U_eff - U2_th));
         end
         
-            
+        W1 = dif_U_1/(dif_U_1+dif_U_2); 
+        W2 = dif_U_2/(dif_U_1+dif_U_2); % proportion of active fast-twitch fiber of total active muscle (0-1)
+        
         % activation-frequency relationship (Brown and Loeb 2000)
         f_half = 8.5; % frequency at which the motor unit produces half of its maximal isometric force 
         fmin = 0.5*f_half; % minimum firing frequency of slow-twitch fiber

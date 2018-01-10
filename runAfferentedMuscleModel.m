@@ -18,7 +18,7 @@ muscle_parameter.optimalLength = 6.8; % muscle optimal length (cm)
 muscle_parameter.tendonLength = 24.1; % tendon length (cm)
 muscle_parameter.muscleInitialLength = 6.8; % initial muscle length (cm)
 muscle_parameter.tendonInitialLength = 24.1; % initial tendon length (cm)
-muscle_parameter.MVIC = 363.4008-2.043; % maximal voluntary isometric force
+muscle_parameter.MVIC = 472.9117-2.043; % maximal voluntary isometric force
 muscle_parameter.baseline = 2.043; % passive force at zero activation
 
 %--------------------
@@ -48,7 +48,7 @@ gain_parameter.Ib = 400; % constant factor to normalize Ib firing rate into a va
 gain_parameter.Ib_PC = -.3; % presynaptic control of Ib afferent
 %--------------------
 % Define force trajectory that model needs to track
-Fs = 10000;
+Fs = 20000;
 t = 0:1/Fs:35; % time vector for simulation
 amp = 0.2; % target %MVC 
 targetTrajectory = [zeros(1,1*Fs) (amp)*1/2*t(1:2*Fs) amp*ones(1,length(t)-3*Fs)]; % target force trajectory
@@ -60,10 +60,10 @@ feedbackOption = 1;
 
 %% Run afferented muscle model
 % output (see l.334 of AffremetedMuscleModel.m for the details)
-output = AfferentedMuscleModel(muscle_parameter,delay_parameter,gain_parameter,targetTrajectory,feedbackOption);
+output = AfferentedMuscleModel(Fs,muscle_parameter,delay_parameter,gain_parameter,targetTrajectory,feedbackOption);
 
 %%
 % calculate power spectrum and plot it
-[pxx,f] = pwelch(output.ForceTendon(10*Fs:end)-mean(output.ForceTendon(10*Fs:end)),gausswin(5*Fs),2.5*Fs,[],Fs);
+[pxx,f] = pwelch(output.ForceTendon(10*Fs:end)-mean(output.ForceTendon(10*Fs:end)),gausswin(5*Fs),2.5*Fs,0:0.1:20,Fs);
 figure()
-plot(f(1:50),pxx(1:50))
+plot(f,pxx)
